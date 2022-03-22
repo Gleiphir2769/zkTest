@@ -65,14 +65,14 @@ func (s *Node) String() string {
 	return fmt.Sprintf("server.%d=%s", s.id, s.addr)
 }
 
-func AddServer(conn *zk.Conn, server *Node) error {
+func addServer(conn *zk.Conn, server *Node) error {
 	servers := make([]string, 1)
 	servers[0] = server.String()
 	_, err := conn.IncrementalReconfig(servers, nil, -1)
 	return err
 }
 
-func RemoveServer(conn *zk.Conn, server *Node) error {
+func removeServer(conn *zk.Conn, server *Node) error {
 	servers := make([]string, 1)
 	servers[0] = strconv.Itoa(server.id)
 	_, err := conn.IncrementalReconfig(nil, servers, -1)
@@ -108,21 +108,23 @@ func (m *Migrator) Migrate() {
 }
 
 func (m Migrator) AddServers(conn *zk.Conn, nodes []*Node) error {
-	servers := make([]string, len(nodes))
-	for i, node := range nodes {
-		servers[i] = node.String()
+	for _, node := range nodes {
+		err := addServer(conn, node)
+		if err != nil {
+			return err
+		}
 	}
-	_, err := conn.IncrementalReconfig(servers, nil, -1)
-	return err
+	return nil
 }
 
 func (m Migrator) RemoveServers(conn *zk.Conn, nodes []*Node) error {
-	servers := make([]string, len(nodes))
-	for i, node := range nodes {
-		servers[i] = node.String()
+	for _, node := range nodes {
+		err := removeServer(conn, node)
+		if err != nil {
+			return err
+		}
 	}
-	_, err := conn.IncrementalReconfig(nil, servers, -1)
-	return err
+	return nil
 }
 
 func makeServersByHeadless(headless string, cur int) []*Node {
