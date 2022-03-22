@@ -20,7 +20,7 @@ func main() {
 	e := <-ch
 	fmt.Printf("%+v\n", e)
 	servers := make([]string, 0)
-	servers = append(servers, "server.1=zk-cluster-8nxyny-0.zk-cluster-8nxyny-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2888:3888:participant;0.0.0.0:2181")
+	servers = append(servers, "server.4=zk-cluster-8nxyny-3.zk-cluster-8nxyny-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2888:3888:participant;0.0.0.0:2181")
 	reconfig, err := c.Reconfig(servers, -1)
 	if err != nil {
 		log.Fatalln(err)
