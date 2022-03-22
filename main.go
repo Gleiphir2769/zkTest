@@ -22,17 +22,17 @@ func main() {
 	}
 
 	// step1 add old servers to new nodes
-	err = m.AddServers(m.newConn, m.oldCluster[0:2])
-	if err != nil {
-		panic(err)
-	}
-
-	// step2 redeploy
-
-	//err = m.AddServers(m.newConn, m.oldCluster[2:3])
+	//err = m.AddServers(m.newConn, m.oldCluster[0:2])
 	//if err != nil {
 	//	panic(err)
 	//}
+
+	// step2 redeploy
+
+	err = m.AddServers(m.newConn, m.oldCluster[2:3])
+	if err != nil {
+		panic(err)
+	}
 
 	//// step3 add new servers to old nodes
 	//err = m.AddServers(m.oldConn, m.newCluster[0:2])
