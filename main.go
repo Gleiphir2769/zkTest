@@ -22,7 +22,7 @@ func main() {
 	servers := make([]string, 0)
 	servers = append(servers, "server.1=zk-cluster-5a914f-0.zk-cluster-5a914f-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2888:3888:participant;0.0.0.0:2181")
 
-	reconfig, err := c.IncrementalReconfig(servers, nil, -1)
+	reconfig, err := c.IncrementalReconfig(nil, servers, -1)
 	if err != nil {
 		log.Fatalln(err)
 	}
