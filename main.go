@@ -29,10 +29,10 @@ func main() {
 
 	// step2 redeploy
 
-	err = m.AddServers(m.newConn, m.oldCluster[2:3])
-	if err != nil {
-		panic(err)
-	}
+	//err = m.AddServers(m.newConn, m.oldCluster[2:3])
+	//if err != nil {
+	//	panic(err)
+	//}
 
 	//// step3 add new servers to old nodes
 	//err = m.AddServers(m.oldConn, m.newCluster[0:2])
