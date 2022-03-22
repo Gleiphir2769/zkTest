@@ -29,22 +29,25 @@ func main() {
 
 	// step2 redeploy
 
-	err = m.AddServers(m.newConn, m.oldCluster[2:3])
-	if err != nil {
-		panic(err)
-	}
+	//err = m.AddServers(m.newConn, m.oldCluster[2:3])
+	//if err != nil {
+	//	panic(err)
+	//}
 
 	//// step3 add new servers to old nodes
-	//err = m.AddServers(m.oldConn, m.newCluster[0:2])
-	//if err != nil {
-	//	panic(err)
-	//}
+	err = m.AddServers(m.oldConn, m.newCluster[0:2])
+	fmt.Println("-----------------")
+	if err != nil {
+		fmt.Println("operation failed", err)
+	}
+	fmt.Println("operation success")
 	//
-	//err = m.AddServers(m.oldConn, m.newCluster[2:3])
-	//if err != nil {
-	//	panic(err)
-	//}
-
+	err = m.AddServers(m.oldConn, m.newCluster[2:3])
+	fmt.Println("-----------------")
+	if err != nil {
+		fmt.Println("operation failed", err)
+	}
+	fmt.Println("operation success")
 	// step4 redeploy old cluster followers
 
 	// step5 redeploy old cluster leader
