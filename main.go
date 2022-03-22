@@ -10,10 +10,10 @@ import (
 )
 
 func main() {
-	oldHeadless := "zk-cluster-z9gphk-0.zk-cluster.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-z9gphk-1.zk-cluster.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-z9gphk-2.zk-cluster.cluster5.nbj04.corp.yodao.com:2181"
+	oldHeadless := "zk-cluster-z9gphk-0.zk-cluster-z9gphk-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-z9gphk-1.zk-cluster-z9gphk-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-z9gphk-2.zk-cluster-z9gphk-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181"
 	oldInternal := "10.109.12.141"
 
-	newHeadless := "zk-cluster-fhdq6s-1.zk-cluster.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-fhdq6s-2.zk-cluster.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-fhdq6s-0.zk-cluster.cluster5.nbj04.corp.yodao.com:2181"
+	newHeadless := "zk-cluster-fhdq6s-0.zk-cluster-fhdq6s-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-fhdq6s-1.zk-cluster-fhdq6s-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-fhdq6s-2.zk-cluster-fhdq6s-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181"
 	newInterNal := "10.109.39.27"
 
 	m, err := NewMigrator(oldHeadless, newHeadless, oldInternal, newInterNal)
@@ -62,7 +62,7 @@ type Node struct {
 }
 
 func (s *Node) String() string {
-	return fmt.Sprintf("server.%d=%s", s.id, s.addr)
+	return fmt.Sprintf("server.%d=%s:2888:3888:participant:0.0.0.0:2181", s.id, s.addr)
 }
 
 func addServer(conn *zk.Conn, server *Node) error {
@@ -136,7 +136,7 @@ func makeServersByHeadless(headless string, cur int) []*Node {
 		addrTrim := strings.TrimSpace(addr)
 		nodes[i] = &Node{
 			id:   cur,
-			addr: addrTrim,
+			addr: strings.Split(addrTrim, ":")[0],
 		}
 		cur++
 	}
