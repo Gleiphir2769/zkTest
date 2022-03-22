@@ -3,53 +3,139 @@ package main
 import (
 	"fmt"
 	"github.com/samuel/go-zookeeper/zk"
+	"sort"
 	"strconv"
+	"strings"
 	"time"
 )
 
 func main() {
-	c, _, err := zk.Connect([]string{"10.109.58.101"}, time.Second) //*10)
+	oldHeadless := "zk-cluster-z9gphk-0.zk-cluster.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-z9gphk-1.zk-cluster.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-z9gphk-2.zk-cluster.cluster5.nbj04.corp.yodao.com:2181"
+	oldInternal := "10.109.12.141"
+
+	newHeadless := "zk-cluster-fhdq6s-1.zk-cluster.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-fhdq6s-2.zk-cluster.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-fhdq6s-0.zk-cluster.cluster5.nbj04.corp.yodao.com:2181"
+	newInterNal := "10.109.13.161"
+
+	m, err := NewMigrator(oldHeadless, newHeadless, oldInternal, newInterNal)
 	if err != nil {
 		panic(err)
 	}
-	//children, stat, ch, err := c.ChildrenW("/")
+
+	// step1 add old servers to new nodes
+	err = m.AddServers(m.newConn, m.oldCluster[0:2])
+	if err != nil {
+		panic(err)
+	}
+
+	// step2 redeploy
+
+	err = m.AddServers(m.newConn, m.oldCluster[2:3])
+	if err != nil {
+		panic(err)
+	}
+
+	//// step3 add new servers to old nodes
+	//err = m.AddServers(m.oldConn, m.newCluster[0:2])
 	//if err != nil {
 	//	panic(err)
 	//}
-	//fmt.Printf("%+v %+v\n", children, stat)
-	//e := <-ch
-	//fmt.Printf("%+v\n", e)
-	server := &Server{
-		id:   1,
-		addr: "zk-cluster-5a914f-0.zk-cluster-5a914f-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2888:3888:participant;0.0.0.0:2181",
-	}
+	//
+	//err = m.AddServers(m.oldConn, m.newCluster[2:3])
+	//if err != nil {
+	//	panic(err)
+	//}
 
-	err = AddServer(c, server)
+	// step4 redeploy old cluster followers
+
+	// step5 redeploy old cluster leader
+
 	fmt.Println("-----------------")
 	if err != nil {
-		fmt.Println("operation success")
+		fmt.Println("operation failed", err)
 	}
+	fmt.Println("operation success")
 }
 
-type Server struct {
+type Node struct {
 	id   int
 	addr string
 }
 
-func (s Server) String() string {
+func (s *Node) String() string {
 	return fmt.Sprintf("server.%d=%s", s.id, s.addr)
 }
 
-func AddServer(conn *zk.Conn, server *Server) error {
+func AddServer(conn *zk.Conn, server *Node) error {
 	servers := make([]string, 1)
 	servers[0] = server.String()
 	_, err := conn.IncrementalReconfig(servers, nil, -1)
 	return err
 }
 
-func RemoveServer(conn *zk.Conn, server *Server) error {
+func RemoveServer(conn *zk.Conn, server *Node) error {
 	servers := make([]string, 1)
 	servers[0] = strconv.Itoa(server.id)
 	_, err := conn.IncrementalReconfig(nil, servers, -1)
 	return err
+}
+
+type Migrator struct {
+	oldConn    *zk.Conn
+	newConn    *zk.Conn
+	oldCluster []*Node
+	newCluster []*Node
+}
+
+func NewMigrator(oldHeadless string, newHeadless string, oldAddr string, newAddr string) (*Migrator, error) {
+	oc, _, err := zk.Connect([]string{oldAddr}, time.Second) //*10)
+	if err != nil {
+		return nil, err
+	}
+	nc, _, err := zk.Connect([]string{newAddr}, time.Second) //*10)
+	if err != nil {
+		return nil, err
+	}
+	return &Migrator{
+		oldConn:    oc,
+		newConn:    nc,
+		oldCluster: makeServersByHeadless(oldHeadless, 1),
+		newCluster: makeServersByHeadless(newHeadless, len(oldHeadless)+1),
+	}, nil
+}
+
+func (m *Migrator) Migrate() {
+
+}
+
+func (m Migrator) AddServers(conn *zk.Conn, nodes []*Node) error {
+	servers := make([]string, len(nodes))
+	for i, node := range nodes {
+		servers[i] = node.String()
+	}
+	_, err := conn.IncrementalReconfig(servers, nil, -1)
+	return err
+}
+
+func (m Migrator) RemoveServers(conn *zk.Conn, nodes []*Node) error {
+	servers := make([]string, len(nodes))
+	for i, node := range nodes {
+		servers[i] = node.String()
+	}
+	_, err := conn.IncrementalReconfig(nil, servers, -1)
+	return err
+}
+
+func makeServersByHeadless(headless string, cur int) []*Node {
+	addrs := strings.Split(headless, ",")
+	sort.Strings(addrs)
+	nodes := make([]*Node, len(addrs))
+	for i, addr := range addrs {
+		addrTrim := strings.TrimSpace(addr)
+		nodes[i] = &Node{
+			id:   cur,
+			addr: addrTrim,
+		}
+		cur++
+	}
+	return nodes
 }
