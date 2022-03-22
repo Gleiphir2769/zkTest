@@ -10,10 +10,10 @@ import (
 )
 
 func main() {
-	oldHeadless := "zk-cluster-z9gphk-0.zk-cluster-z9gphk-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-z9gphk-1.zk-cluster-z9gphk-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-z9gphk-2.zk-cluster-z9gphk-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181"
+	oldHeadless := "zk-cluster-fhdq6s-0.zk-cluster-fhdq6s-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-fhdq6s-1.zk-cluster-fhdq6s-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-fhdq6s-2.zk-cluster-fhdq6s-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181"
 	oldInternal := "10.109.12.141"
 
-	newHeadless := "zk-cluster-fhdq6s-0.zk-cluster-fhdq6s-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-fhdq6s-1.zk-cluster-fhdq6s-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-fhdq6s-2.zk-cluster-fhdq6s-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181"
+	newHeadless := "zk-cluster-z9gphk-0.zk-cluster-z9gphk-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-z9gphk-1.zk-cluster-z9gphk-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-z9gphk-2.zk-cluster-z9gphk-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181"
 	newInterNal := "10.109.39.27"
 
 	m, err := NewMigrator(oldHeadless, newHeadless, oldInternal, newInterNal)
