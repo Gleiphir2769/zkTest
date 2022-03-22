@@ -14,7 +14,7 @@ func main() {
 	oldInternal := "10.109.12.141"
 
 	newHeadless := "zk-cluster-fhdq6s-1.zk-cluster.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-fhdq6s-2.zk-cluster.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-fhdq6s-0.zk-cluster.cluster5.nbj04.corp.yodao.com:2181"
-	newInterNal := "10.109.13.161"
+	newInterNal := "10.109.39.27"
 
 	m, err := NewMigrator(oldHeadless, newHeadless, oldInternal, newInterNal)
 	if err != nil {
@@ -68,6 +68,7 @@ func (s *Node) String() string {
 func addServer(conn *zk.Conn, server *Node) error {
 	servers := make([]string, 1)
 	servers[0] = server.String()
+	fmt.Println(servers[0])
 	_, err := conn.IncrementalReconfig(servers, nil, -1)
 	return err
 }
