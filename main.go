@@ -62,7 +62,7 @@ type Node struct {
 }
 
 func (s *Node) String() string {
-	return fmt.Sprintf("server.%d=%s:2888:3888:participant:0.0.0.0:2181", s.id, s.addr)
+	return fmt.Sprintf("server.%d=%s:2888:3888:participant;0.0.0.0:2181", s.id, s.addr)
 }
 
 func addServer(conn *zk.Conn, server *Node) error {
