@@ -138,15 +138,15 @@ func (m *Migrator) Migrate() {
 }
 
 func (m Migrator) ModifyNewCluster() error {
-	err := m.AddServers(m.newConn, m.oldCluster[0:2])
-	if err != nil {
-		return err
-	}
-
-	//err := m.AddServers(m.newConn, m.oldCluster[2:3])
+	//err := m.AddServers(m.newConn, m.oldCluster[0:2])
 	//if err != nil {
 	//	return err
 	//}
+
+	err := m.AddServers(m.newConn, m.oldCluster[2:3])
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
