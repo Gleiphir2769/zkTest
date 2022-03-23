@@ -3,10 +3,16 @@ package main
 import (
 	"fmt"
 	"github.com/samuel/go-zookeeper/zk"
+	"log"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+)
+
+const (
+	Remove = 1
+	Add    = 2
 )
 
 func main() {
@@ -21,42 +27,39 @@ func main() {
 		panic(err)
 	}
 
-	// step1 add old servers to new nodes
+	m.Migrate()
+
+	//// step1 add first and second old servers to new nodes
 	//err = m.AddServers(m.newConn, m.oldCluster[0:2])
 	//if err != nil {
 	//	panic(err)
 	//}
-
-	// step2 redeploy
-
+	//
+	//// step2 all nodes redeploy
+	//
+	//// step3 add the last old servers
 	//err = m.AddServers(m.newConn, m.oldCluster[2:3])
 	//if err != nil {
 	//	panic(err)
 	//}
-
-	//// step3 add new servers to old nodes
-	err = m.AddServers(m.oldConn, m.newCluster[0:2])
-	fmt.Println("-----------------")
-	if err != nil {
-		fmt.Println("operation failed", err)
-	}
-	fmt.Println("operation success")
 	//
-	err = m.AddServers(m.oldConn, m.newCluster[2:3])
-	fmt.Println("-----------------")
-	if err != nil {
-		fmt.Println("operation failed", err)
-	}
-	fmt.Println("operation success")
-	// step4 redeploy old cluster followers
-
-	// step5 redeploy old cluster leader
-
-	fmt.Println("-----------------")
-	if err != nil {
-		fmt.Println("operation failed", err)
-	}
-	fmt.Println("operation success")
+	////// step3 add new servers to old nodes
+	//err = m.AddServers(m.oldConn, m.newCluster[0:3])
+	//fmt.Println("-----------------")
+	//if err != nil {
+	//	fmt.Println("operation failed", err)
+	//}
+	//fmt.Println("operation success")
+	//
+	//// step4 redeploy old cluster followers
+	//
+	//// step5 redeploy old cluster leader
+	//
+	//fmt.Println("-----------------")
+	//if err != nil {
+	//	fmt.Println("operation failed", err)
+	//}
+	//fmt.Println("operation success")
 }
 
 type Node struct {
@@ -88,6 +91,24 @@ type Migrator struct {
 	newConn    *zk.Conn
 	oldCluster []*Node
 	newCluster []*Node
+	entries    []*entry
+}
+
+type entry struct {
+	conn *zk.Conn
+	node *Node
+	mode int16
+}
+
+func (j *entry) undo() {
+	switch j.mode {
+	case Remove:
+		_ = addServer(j.conn, j.node)
+	case Add:
+		_ = removeServer(j.conn, j.node)
+	default:
+		panic("unreachable")
+	}
 }
 
 func NewMigrator(oldHeadless string, newHeadless string, oldAddr string, newAddr string) (*Migrator, error) {
@@ -108,27 +129,64 @@ func NewMigrator(oldHeadless string, newHeadless string, oldAddr string, newAddr
 }
 
 func (m *Migrator) Migrate() {
-
+	err := m.ModifyNewCluster()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Println("------------------")
+	fmt.Println("operation success")
 }
 
-func (m Migrator) AddServers(conn *zk.Conn, nodes []*Node) error {
+func (m Migrator) ModifyNewCluster() error {
+	err := m.AddServers(m.newConn, m.oldCluster[0:2])
+	if err != nil {
+		return err
+	}
+
+	//err = m.AddServers(m.newConn, m.oldCluster[2:3])
+	//if err != nil {
+	//	return err
+	//}
+
+	return nil
+}
+
+func (m *Migrator) AddServers(conn *zk.Conn, nodes []*Node) error {
 	for _, node := range nodes {
 		err := addServer(conn, node)
 		if err != nil {
+			m.recover()
 			return err
 		}
+		m.entries = append(m.entries, &entry{
+			conn: conn,
+			node: node,
+			mode: Add,
+		})
 	}
 	return nil
 }
 
-func (m Migrator) RemoveServers(conn *zk.Conn, nodes []*Node) error {
+func (m *Migrator) RemoveServers(conn *zk.Conn, nodes []*Node) error {
 	for _, node := range nodes {
 		err := removeServer(conn, node)
 		if err != nil {
+			m.recover()
 			return err
 		}
+		m.entries = append(m.entries, &entry{
+			conn: conn,
+			node: node,
+			mode: Remove,
+		})
 	}
 	return nil
+}
+
+func (m *Migrator) recover() {
+	for i := len(m.entries) - 1; i >= 0; i-- {
+		m.entries[i].undo()
+	}
 }
 
 func makeServersByHeadless(headless string, cur int) []*Node {
