@@ -16,11 +16,11 @@ const (
 )
 
 func main() {
-	oldHeadless := "zk-cluster-fhdq6s-0.zk-cluster-fhdq6s-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-fhdq6s-1.zk-cluster-fhdq6s-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-fhdq6s-2.zk-cluster-fhdq6s-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181"
+	oldHeadless := "zk-cluster-uj1zds-0.zk-cluster-uj1zds-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-uj1zds-2.zk-cluster-uj1zds-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-uj1zds-1.zk-cluster-uj1zds-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181"
 	oldInternal := "10.109.12.141"
 
-	newHeadless := "zk-cluster-6c12r3-0.zk-cluster-6c12r3-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-6c12r3-1.zk-cluster-6c12r3-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-6c12r3-2.zk-cluster-6c12r3-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181"
-	newInterNal := "zk-cluster-6c12r3-0.zk-cluster-6c12r3-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com"
+	newHeadless := "zk-cluster-eq31ut-2.zk-cluster-eq31ut-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-eq31ut-0.zk-cluster-eq31ut-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181,zk-cluster-eq31ut-1.zk-cluster-eq31ut-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com:2181"
+	newInterNal := "zk-cluster-eq31ut-2.zk-cluster-eq31ut-headless.zk-cluster.svc.cluster5.nbj04.corp.yodao.com"
 
 	m, err := NewMigrator(oldHeadless, newHeadless, oldInternal, newInterNal)
 	if err != nil {
@@ -143,7 +143,7 @@ func (m Migrator) ModifyNewCluster() error {
 		return err
 	}
 
-	//err = m.AddServers(m.newConn, m.oldCluster[2:3])
+	//err := m.AddServers(m.newConn, m.oldCluster[2:3])
 	//if err != nil {
 	//	return err
 	//}
